@@ -24,7 +24,7 @@ This repository contains the complete implementation of a novel framework for co
 
 ```
 .
-├── code/                           # Source code (17 modules, 8,958 lines)
+├── code/                           # Source code (17 modules, 8,863 lines)
 │   ├── threshold_discretizer.py    # Four-strategy discretization framework
 │   ├── rule_generator.py           # Algorithm 1 implementation
 │   ├── xai_dr_comparison.py        # Unified DR comparison (6 methods)
@@ -52,7 +52,7 @@ This repository contains the complete implementation of a novel framework for co
 │       ├── rules_credit_risk.json  # SR 11-7 validation report
 │       └── individual_explanations.json  # GDPR Article 22 explanations
 │
-├── thesis/                         # LaTeX thesis (125 pages)
+├── thesis/                         # LaTeX thesis (120 pages)
 │   └── thesis.pdf                  # Submitted thesis
 │
 ├── README.md                       # This file
@@ -112,7 +112,7 @@ Quick reference:
 | **Table 5.2** (Regime Comparison) | `python run_regime_comparison.py` | `outputs/regime_comparison_results.csv` |
 | **Table 5.3** (Threshold Strategies) | `python threshold_discretizer.py` | `outputs/discretization_results.csv` |
 | **Section 5.4** (Case Study) | `python case_study_credit_risk.py` | `outputs/case_study/*` |
-| **Appendix B** (36 Rules) | Automatically generated during experiments | `outputs/all_rules.csv` |
+| **All 36 Rules** | Automatically generated during experiments | `outputs/all_rules.csv` |
 
 ## Key Dependencies
 
