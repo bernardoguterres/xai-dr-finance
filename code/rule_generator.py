@@ -265,10 +265,12 @@ class RuleGenerator:
         Args:
             rules_dict: Output from generate_rules()
             format: 'json', 'csv', or 'latex'
-            output_path: Optional file path (auto-generated if None)
+            output_path: Optional file path. JSON/CSV default to ./outputs; LaTeX
+                returns text without writing when omitted.
 
         Returns:
-            Formatted string if no output_path, None otherwise
+            JSON/CSV write to a file and return None. LaTeX returns its text,
+            optionally also writing it to output_path.
         """
         if format == 'json':
             return self._export_json(rules_dict, output_path)
@@ -464,7 +466,7 @@ class RuleGenerator:
 
         if output_path is None:
             method = rules_dict['metadata']['discretization_method']
-            output_path = Path('/home/claude/outputs') / f'rules_{method}.json'
+            output_path = Path('outputs') / f'rules_{method}.json'
 
         output_path = Path(output_path)
         output_path.parent.mkdir(exist_ok=True, parents=True)
@@ -493,7 +495,7 @@ class RuleGenerator:
 
         if output_path is None:
             method = rules_dict['metadata']['discretization_method']
-            output_path = Path('/home/claude/outputs') / f'rules_{method}.csv'
+            output_path = Path('outputs') / f'rules_{method}.csv'
 
         output_path = Path(output_path)
         output_path.parent.mkdir(exist_ok=True, parents=True)
@@ -637,9 +639,9 @@ if __name__ == '__main__':
     print("All tests passed! ✓")
     print(f"{'='*80}")
     print("\nExported files:")
-    print("  - /home/claude/outputs/rules_quantile.json")
-    print("  - /home/claude/outputs/rules_std.json")
-    print("  - /home/claude/outputs/rules_hybrid.json")
+    print("  - outputs/rules_quantile.json")
+    print("  - outputs/rules_std.json")
+    print("  - outputs/rules_hybrid.json")
 
     print("\nthe rule generation algorithm implementation complete!")
     print("Next step: Integration with existing experiments (PROMPT_3)")

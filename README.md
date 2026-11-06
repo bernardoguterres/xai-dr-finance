@@ -175,18 +175,32 @@ python code/run_regime_comparison.py
 python code/case_study_credit_risk.py
 ```
 
-These three commands cover only part of the pipeline. `run_all_experiments.py --method all`
+To generate rules with actual PCA, XGBoost surrogates and SHAP on the existing synthetic stock
+dataset, run this separate workflow from the repository root:
+
+```bash
+python demos/demo_rule_generation.py --output-dir outputs/rule_demo
+```
+
+It writes `rules_quantile.json`, `rules_std.json`, `rules_domain.json`, `all_rules.csv`, and
+`rules_human_readable.txt` into the selected directory. Domain rules use explicit `[-1, 1]`
+thresholds for each of four components. The existing data generator and surrogate models use
+seed 42; rule counts and numerical results can vary with dependencies and sparse categories.
+This regenerates current demonstration artifacts, not the original thesis results.
+
+These three experiment commands cover only part of the pipeline. `run_all_experiments.py --method all`
 orchestrates the DR comparison, ClusterShapley, sparse-autoencoder, β-TCVAE, and probing
 experiments; despite its name, it does not run `rule_generator.py` or `integrated_gradients.py`,
 so it does not regenerate every thesis artefact or the reported 36-rule set. `rule_generator.py`
 is not a standalone reproduction command: its `__main__` block runs against simulated factor
-scores and synthetically corrected SHAP values, and its default export path is hard-coded to
-`/home/claude/outputs`, not a path in this repo.
+scores and synthetically corrected SHAP values. Library JSON/CSV exports default to `./outputs`
+relative to the working directory; pass `output_path` to choose another file.
 
 `REPRODUCTION_GUIDE.md` exists but uses working-directory and output-path instructions that do
 not match the commands above, references UMAP where the current regime runner excludes it, and
-claims exact deterministic reproduction; it remains documentation debt and should not currently
-be treated as the canonical reproduction guide. Small numerical differences are otherwise
+contains historical expected figures that are not verified reproduction targets. Its opening
+section and rule-generation instructions describe the current synthetic workflow; the remaining
+historical experiment instructions still need reconciliation. Small numerical differences are
 expected across dependency versions, hardware, and stochastic libraries (t-SNE, UMAP, PyTorch);
 exact reproduction is not guaranteed even with a fixed seed.
 
@@ -195,8 +209,10 @@ exact reproduction is not guaranteed even with a fixed seed.
 `tests/test_threshold_discretizer.py` defines 42 test functions covering the threshold
 discretization module: correctness, robustness to invalid input, edge cases, and strategy
 integration. Two (domain-threshold validation cases) are marked skipped, since that validation
-is not implemented in the current version. Coverage is limited to this one subsystem; the DR
-comparison, rule generation, case study, and supplementary modules have no automated tests.
+is not implemented in the current version. The rule-generation workflow also has export
+regressions and a subprocess test of the actual synthetic PCA/surrogate/SHAP demo, including
+custom domain thresholds and consistent JSON/CSV/text outputs. The broader DR comparison,
+case study, and supplementary modules remain untested.
 
 ## Limitations
 
@@ -210,7 +226,7 @@ comparison, rule generation, case study, and supplementary modules have no autom
 - Thresholds are static; there is no drift detection or recalibration mechanism.
 - There is no human evaluation of whether the generated rules are actually interpretable to
   practitioners.
-- Test coverage is limited to the discretization module.
+- Test coverage covers discretization and the synthetic rule-generation workflow, not all experiments.
 
 ## Thesis and citation
 

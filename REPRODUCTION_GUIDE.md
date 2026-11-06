@@ -1,6 +1,50 @@
-# Complete Reproduction Guide
+# Reproduction Guide
 
-This guide provides step-by-step instructions to reproduce every table, figure, and result reported in the thesis.
+The current synthetic rule-generation workflow below is executable from the repository root.
+It regenerates demonstration artifacts, not the original thesis evidence. The remaining
+experiment instructions and numerical tables are historical references: their paths and
+expected values have not all been reconciled with the current implementation. In particular,
+the default regime runner excludes UMAP. Do not treat this guide as exact recovery of every
+thesis result.
+
+## Current synthetic rule-generation workflow
+
+After installing `requirements.txt`, run from the repository root:
+
+```bash
+python demos/demo_rule_generation.py --output-dir outputs/rule_demo
+python -m pytest tests/test_rule_generation_workflow.py -q
+```
+
+The demo uses the existing 500-stock synthetic generator, four PCA components, fitted XGBoost
+surrogates and actual TreeSHAP values. It generates quantile, standard-deviation and domain
+rules; domain thresholds are explicitly `[-1, 1]` for each component. The existing generator
+and surrogate models use seed 42. No financial download, account or paid API is needed.
+
+The destination is created, including parent directories. It contains `rules_quantile.json`,
+`rules_std.json`, `rules_domain.json`, `all_rules.csv` and `rules_human_readable.txt`. Omitting
+`--output-dir` selects `./outputs` relative to the working directory. Rule counts reflect the
+actual categories meeting the minimum sample count; do not force the historical total of 36.
+The CSV contains one row per rule. JSON `n_rules`, CSV rows per strategy and text rule content
+are checked against one another by the subprocess regression. Numerical results may vary
+across library versions; these files do not prove the thesis metrics or real-world fidelity.
+
+The library `RuleGenerator.export_rules()` similarly defaults JSON/CSV to `./outputs` and
+accepts an explicit `output_path`. The standalone `code/rule_generator.py` demonstration
+uses simulated, corrected SHAP arrays; use the command above for the actual surrogate path.
+
+### Checked CPU environment
+
+The root command and the test suite were exercised with Python 3.12.14, NumPy 2.3.5,
+pandas 2.2.3, SciPy 1.17.0, scikit-learn 1.8.0, XGBoost CPU 2.1.4 (`xgboost-cpu`),
+SHAP 0.54.1, Matplotlib 3.10.8 and seaborn 0.13.2. That run produced 12 rules per strategy
+and matching JSON/CSV/text content; it is current demo evidence, not recovery of the thesis
+artifacts. The suite reported 44 passed and two existing skipped domain-validation cases.
+The broad lower bounds in `requirements.txt` are not a lockfile: for example, SHAP 0.46.0
+failed to import alongside NumPy 2.3.5 in this environment. Use compatible library versions
+and record them for your own run.
+
+## Historical experiment reference
 
 ## Prerequisites
 
@@ -18,7 +62,8 @@ cd tests/
 pytest test_threshold_discretizer.py -v
 ```
 
-**Expected output:** All 42 tests pass (100% pass rate)
+Two domain-threshold validation cases are intentionally skipped; inspect the actual pytest
+summary rather than assuming all defined tests pass.
 
 ---
 
@@ -252,18 +297,18 @@ Random Forest Probe: 0.905
 
 ---
 
-## Appendix B: All 36 Generated Rules
+## Appendix B: Generating Current Rules
 
 **Thesis reference:** Appendix B  
 **Reproduction command:**
 
 ```bash
-cd code/
-python run_all_experiments.py --method all
+# From the repository root
+python demos/demo_rule_generation.py --output-dir outputs
 ```
 
 **Output files:**
-- `outputs/all_rules.csv` — Machine-readable format (36 rows)
+- `outputs/all_rules.csv` — Machine-readable format (one row per generated rule)
 - `outputs/rules_quantile.json` — Quantile strategy rules
 - `outputs/rules_std.json` — Standard deviation strategy rules
 - `outputs/rules_domain.json` — Domain expert strategy rules
@@ -272,10 +317,24 @@ python run_all_experiments.py --method all
 **Verification:**
 
 ```bash
-wc -l outputs/all_rules.csv
+python - <<'PY'
+import csv
+import json
+from pathlib import Path
+root = Path('outputs')
+with (root / 'all_rules.csv').open() as stream:
+    rows = list(csv.DictReader(stream))
+for strategy in ('quantile', 'std', 'domain'):
+    payload = json.loads((root / f'rules_{strategy}.json').read_text())
+    count = sum(row['Strategy'] == strategy for row in rows)
+    assert count == payload['n_rules'] == len(payload['rules'])
+    print(strategy, count)
+PY
 ```
 
-Expected: 37 lines (1 header + 36 rules)
+CSV rule text contains embedded newlines, so `wc -l` does not count records. Read the CSV with
+`csv.DictReader` or pandas and compare each strategy's count with its JSON `n_rules`. The
+actual count need not equal the historical thesis total.
 
 ```bash
 head -20 outputs/rules_human_readable.txt
@@ -440,4 +499,5 @@ All experiments reported in the thesis were run with:
 - **PyTorch:** 1.13.1
 - **Random seed:** 42 (fixed throughout)
 
-Results are deterministic and should reproduce exactly on the same environment.
+Fixed seeds help repeat runs, but exact recovery of historical values is not guaranteed.
+Record the environment and compare numerical values with appropriate tolerances.
