@@ -83,7 +83,7 @@ def main(argv=None):
 
         # Initialize rule generator
         if strategy == 'domain':
-            # Use finance-specific thresholds
+            # Illustrative score cutoffs, not calibrated financial thresholds.
             custom_thresholds = {
                 i: [-1.0, 1.0] for i in range(4)
             }
